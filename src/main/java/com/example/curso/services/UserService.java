@@ -2,8 +2,11 @@ package com.example.curso.services;
 
 import com.example.curso.entite.User;
 import com.example.curso.repositories.UserRepository;
+import com.example.curso.services.exception.DataBaseException;
 import com.example.curso.services.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,7 +30,13 @@ public class UserService {
         return repository.save(obj);
     }
     public void delete(Long id){
-        repository.deleteById(id);
+        try {
+            repository.deleteById(id);
+        }catch (EmptyResultDataAccessException e){
+            throw new ResourceNotFoundException(id);
+        }catch (DataIntegrityViolationException e){
+            throw new DataBaseException(e.getMessage());
+        }
     }
     public User update(Long id, User obj){
         User entity = repository.getOne(id);
